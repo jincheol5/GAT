@@ -16,7 +16,7 @@ class ModelTrainer:
             for data in data_loader:
                 data=data.to(device)
                 output=model(data.x,data.edge_index,data.batch)
-                loss=F.cross_entropy(output,data.y.long())
+                loss=F.cross_entropy(output,data.y.view(-1))
                 epoch_loss+=loss.item()
 
                 # back propagation
@@ -40,6 +40,6 @@ class ModelTrainer:
                 output=model(data.x,data.edge_index,data.batch)
                 prob=F.softmax(output,dim=1)
                 pred=prob.argmax(dim=1)
-                correct+=int((pred==data.y.long()).sum())
+                correct+=int((pred==data.y.view(-1)).sum())
                 total+=data.y.size(0)
         return correct/total

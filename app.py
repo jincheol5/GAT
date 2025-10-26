@@ -25,6 +25,7 @@ config={
 dataset=TUDataset(root='/tmp/ENZYMES',name='ENZYMES')
 output_dim=dataset.num_classes
 data=dataset[0]
+
 node_dim=data.x.size(1)
 latent_dim=32
 
