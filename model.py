@@ -26,7 +26,7 @@ class Custom_GAT_layer(MessagePassing):
         e=self.leaky_relu(e)
 
         alpha=scatter_softmax(src=e,index=index,dim=0) # [num_edges,num_head] 
-        output=alpha.unsqueeze(-1)*x_j.unsqueeze(1) # [num_edges,num_head,latent_dim]
+        output=alpha.unsqueeze(-1)*x_j.unsqueeze(1) # [num_edges,num_head,latent_dim] 여기 부분 계산 그래프 문제 있음 
 
         return output
 
