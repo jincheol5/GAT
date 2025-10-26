@@ -18,7 +18,7 @@ torch.backends.cudnn.benchmark=False
 
 config={
     'optimizer':'adam',
-    'epochs':1,
+    'epochs':100,
     'lr':0.001
 }
 
