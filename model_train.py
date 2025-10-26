@@ -15,7 +15,7 @@ class ModelTrainer:
             epoch_loss=0
             for data in tqdm(data_loader,desc=f"{epoch+1} epoch training..."):
                 data=data.to(device)
-                output=model(data.x,data.edge_index)
+                output=model(data.x,data.edge_index,data.batch)
                 loss=F.cross_entropy(output,data.y)
                 epoch_loss+=loss.item()
 
@@ -37,7 +37,7 @@ class ModelTrainer:
         with torch.no_grad():
             for data in tqdm(data_loader,desc=f"Testing..."):
                 data=data.to(device)
-                output=model(data.x,data.edge_index)
+                output=model(data.x,data.edge_index,data.batch)
                 prob=F.softmax(output,dim=1)
                 pred=prob.argmax(dim=1)
                 correct+=int((pred==data.y).sum())

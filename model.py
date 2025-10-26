@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing_extensions import Literal
 from torch_scatter import scatter_softmax,scatter
-from torch_geometric.nn import MessagePassing,GATConv
+from torch_geometric.nn import MessagePassing,GATConv,global_mean_pool
 
 class Custom_GAT_layer(MessagePassing):
     def __init__(self,node_dim,latent_dim,aggr=None,num_head=1,is_final_layer=True):
@@ -56,6 +56,8 @@ class GAT_classifier(nn.Module):
         else:
             self.processor=GATConv(in_channels=node_dim,out_channels=latent_dim,heads=num_head)
         self.linear=nn.Linear(in_features=latent_dim,out_features=output_dim)
-    def forward(self,x,edge_index):
+    def forward(self,x,edge_index,batch):
         h=self.processor(x,edge_index)
-        return h
+        h_graph=global_mean_pool(h,batch)  # [num_graphs,latent_dim]
+        output=self.linear(h_graph)  # [num_graphs,output_dim]
+        return output
