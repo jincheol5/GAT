@@ -45,7 +45,7 @@ class Custom_GAT_layer(MessagePassing):
 
     def forward(self,x,edge_index):
         h_0=self.initial_linear(x)
-        h=self.propagate(edge_index=edge_index,x=h_0,index=edge_index[1])
+        h=self.propagate(edge_index=edge_index,x=h_0)
         return h
 
 class GAT_classifier(nn.Module):
