@@ -58,10 +58,6 @@ class GAT_classifier(nn.Module):
         self.linear=nn.Linear(in_features=latent_dim,out_features=num_class)
     def forward(self,x,edge_index,batch):
         h=self.processor(x,edge_index) # [num_nodes,latent_dim]
-
-        assert h.size(0) == batch.size(0), f"[Mismatch] h: {h.size(0)}, batch: {batch.size(0)}"
-        print(f"[DEBUG] h.size(0): {h.size(0)}, batch.size(0): {batch.size(0)}, batch.max(): {batch.max().item()}")
-
         h_graph=global_mean_pool(x=h,batch=batch)  # [num_graphs,latent_dim]
         output=self.linear(h_graph)  # [num_graphs,num_class]
         return output

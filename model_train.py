@@ -15,14 +15,6 @@ class ModelTrainer:
             epoch_loss=0
             for data in data_loader:
                 data=data.to(device)
-                
-                print("\n===== DEBUG BATCH =====")
-                print(f"x.shape: {data.x.shape}")
-                print(f"edge_index.shape: {data.edge_index.shape}")
-                print(f"y.shape: {data.y.shape}")
-                print(f"batch.shape: {data.batch.shape}, batch.max(): {data.batch.max().item()}, batch.min(): {data.batch.min().item()}")
-                print(f"h_graph expected graphs: {data.batch.max().item()+1}")
-
                 output=model(data.x,data.edge_index,data.batch) # [num_graphs,num_class]
                 loss=F.cross_entropy(output,data.y)
                 epoch_loss+=loss.item()
@@ -48,9 +40,6 @@ class ModelTrainer:
                 output=model(data.x,data.edge_index,data.batch) # [num_graphs,num_class]
                 prob=F.softmax(output,dim=1)
                 pred=prob.argmax(dim=1) # [num_graphs,]
-                print(f"pred: {pred}")
-                print()
-                print(f"label: {data.y}")
                 correct+=int((pred==data.y).sum())
                 total+=data.y.size(0)
         return correct/total
