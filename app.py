@@ -23,16 +23,14 @@ config={
 }
 
 dataset=TUDataset(root='/tmp/ENZYMES',name='ENZYMES')
+dataset=dataset.shuffle()
 num_class=dataset.num_classes
 data=dataset[0]
 node_dim=data.x.size(1)
 latent_dim=32
 
-print(len(dataset))
-
 train_dataset=dataset[:540]
 test_dataset=dataset[540:]
-
 
 data_loader=DataLoader(train_dataset,batch_size=16,shuffle=True)
 
