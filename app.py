@@ -23,7 +23,7 @@ config={
 }
 
 dataset=TUDataset(root='/tmp/ENZYMES',name='ENZYMES')
-output_dim=dataset.num_classes
+num_class=dataset.num_classes
 data=dataset[0]
 node_dim=data.x.size(1)
 latent_dim=32
@@ -37,8 +37,8 @@ data_loader=DataLoader(train_dataset,batch_size=32,shuffle=True)
 train_data_loader=DataLoader(train_dataset,batch_size=32,shuffle=True)
 test_data_loader=DataLoader(test_dataset,batch_size=32,shuffle=True)
 
-custom_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,output_dim=output_dim,num_head=3,processor='custom')
-pyg_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,output_dim=output_dim,num_head=3,processor='pyg')
+custom_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,num_class=num_class,num_head=3,processor='custom')
+pyg_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,num_class=num_class,num_head=3,processor='pyg')
 
 custom_epoch_loss=ModelTrainer.train(model=custom_model,data_loader=train_data_loader,config=config)
 custom_acc=ModelTrainer.test(model=custom_model,data_loader=test_data_loader)
