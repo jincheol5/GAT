@@ -13,7 +13,7 @@ class ModelTrainer:
         total_epoch_loss=[]
         for epoch in tqdm(range(config['epochs']),desc=f"Training..."):
             epoch_loss=0
-            for data in tqdm(data_loader,desc=f"{epoch+1} epoch training..."):
+            for data in data_loader:
                 data=data.to(device)
                 output=model(data.x,data.edge_index,data.batch)
                 loss=F.cross_entropy(output,data.y)
