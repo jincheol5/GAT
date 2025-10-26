@@ -49,15 +49,15 @@ class Custom_GAT_layer(MessagePassing):
         return h
 
 class GAT_classifier(nn.Module):
-    def __init__(self,node_dim,latent_dim,output_dim,num_head=1,processor:Literal['custom','pyg']='custom'):
+    def __init__(self,node_dim,latent_dim,num_class,num_head=1,processor:Literal['custom','pyg']='custom'):
         super().__init__()
         if processor=='custom':
             self.processor=Custom_GAT_layer(node_dim=node_dim,latent_dim=latent_dim,num_head=num_head,is_final_layer=True)
         else:
             self.processor=GATConv(in_channels=node_dim,out_channels=latent_dim,heads=num_head,concat=False)
-        self.linear=nn.Linear(in_features=latent_dim,out_features=output_dim)
+        self.linear=nn.Linear(in_features=latent_dim,out_features=num_class)
     def forward(self,x,edge_index,batch):
-        h=self.processor(x,edge_index)
-        h_graph=global_mean_pool(h,batch)  # [num_graphs,latent_dim]
-        output=self.linear(h_graph)  # [num_graphs,output_dim]
+        h=self.processor(x,edge_index) # [num_nodes,latent_dim]
+        h_graph=global_mean_pool(x=h,batch=batch)  # [num_graphs,latent_dim]
+        output=self.linear(h_graph)  # [num_graphs,num_class]
         return output

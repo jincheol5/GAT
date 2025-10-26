@@ -15,8 +15,8 @@ class ModelTrainer:
             epoch_loss=0
             for data in data_loader:
                 data=data.to(device)
-                output=model(data.x,data.edge_index,data.batch)
-                loss=F.cross_entropy(output,data.y.view(-1))
+                output=model(data.x,data.edge_index,data.batch) # [num_graphs,num_class]
+                loss=F.cross_entropy(output,data.y)
                 epoch_loss+=loss.item()
 
                 # back propagation
@@ -37,9 +37,10 @@ class ModelTrainer:
         with torch.no_grad():
             for data in tqdm(data_loader,desc=f"Testing..."):
                 data=data.to(device)
-                output=model(data.x,data.edge_index,data.batch)
+                output=model(data.x,data.edge_index,data.batch) # [num_graphs,num_class]
                 prob=F.softmax(output,dim=1)
-                pred=prob.argmax(dim=1)
-                correct+=int((pred==data.y.view(-1)).sum())
+                pred=prob.argmax(dim=1) # [num_graphs,]
+                correct+=int((pred==data.y).sum())
                 total+=data.y.size(0)
+        print(f"correct: {correct}")
         return correct/total
