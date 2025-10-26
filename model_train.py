@@ -40,7 +40,9 @@ class ModelTrainer:
                 output=model(data.x,data.edge_index,data.batch) # [num_graphs,num_class]
                 prob=F.softmax(output,dim=1)
                 pred=prob.argmax(dim=1) # [num_graphs,]
+                print(f"pred: {pred}")
+                print()
+                print(f"label: {data.y}")
                 correct+=int((pred==data.y).sum())
                 total+=data.y.size(0)
-        print(f"correct: {correct}")
         return correct/total

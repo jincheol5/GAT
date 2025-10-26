@@ -32,10 +32,10 @@ train_dataset=dataset[:540]
 test_dataset=dataset[540:]
 
 
-data_loader=DataLoader(train_dataset,batch_size=32,shuffle=True)
+data_loader=DataLoader(train_dataset,batch_size=16,shuffle=True)
 
-train_data_loader=DataLoader(train_dataset,batch_size=32,shuffle=True)
-test_data_loader=DataLoader(test_dataset,batch_size=32,shuffle=True)
+train_data_loader=DataLoader(train_dataset,batch_size=16,shuffle=True)
+test_data_loader=DataLoader(test_dataset,batch_size=16,shuffle=True)
 
 custom_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,num_class=num_class,num_head=3,processor='custom')
 pyg_model=GAT_classifier(node_dim=node_dim,latent_dim=latent_dim,num_class=num_class,num_head=3,processor='pyg')
