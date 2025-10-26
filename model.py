@@ -54,7 +54,7 @@ class GAT_classifier(nn.Module):
         if processor=='custom':
             self.processor=Custom_GAT_layer(node_dim=node_dim,latent_dim=latent_dim,num_head=num_head,is_final_layer=True)
         else:
-            self.processor=GATConv(in_channels=node_dim,out_channels=latent_dim,heads=num_head)
+            self.processor=GATConv(in_channels=node_dim,out_channels=latent_dim,heads=num_head,concat=False)
         self.linear=nn.Linear(in_features=latent_dim,out_features=output_dim)
     def forward(self,x,edge_index,batch):
         h=self.processor(x,edge_index)
