@@ -18,8 +18,8 @@ torch.backends.cudnn.benchmark=False
 
 config={
     'optimizer':'adam',
-    'epochs':10,
-    'lr':0.0005
+    'epochs':100,
+    'lr':0.001
 }
 
 dataset=TUDataset(root='/tmp/ENZYMES',name='ENZYMES')
