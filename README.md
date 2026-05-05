@@ -1,2 +1,2 @@
-# GAT
+# Paper Implementation
 Graph Attention Networks
