@@ -9,7 +9,7 @@ class ModuleUtils:
         ):
         """
         target node별 softmax.
-        numerical stability를 위해 softmax 계산 시 각 target node의 가장 큰 score 값은 빼고 계산
+        numerical stability를 위해 softmax 계산 시 각 target node 그룹에서 가장 큰 score 값은 빼고 계산
 
         score: [E,n_head]
         index: [E,]  # target node id
