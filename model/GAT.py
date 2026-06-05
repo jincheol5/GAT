@@ -32,3 +32,15 @@ class GAT(nn.Module):
 
     def forward(self):
         return NotImplemented
+
+class GAT_Link_Prediction(GAT):
+    def __init__(self,
+            node_dim:int,
+            latent_dim:int,
+            output_dim:int
+        ):
+        super(GAT_Link_Prediction,self).__init__(
+            node_dim,
+            latent_dim,
+            output_dim
+        )

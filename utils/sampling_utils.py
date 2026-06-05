@@ -127,3 +127,46 @@ class SamplingUtils:
             dim=0
         ).to(edge_index.device)
         return neg_edge_index
+
+    @staticmethod
+    def neighbor_sampling(
+            edge_index:torch.Tensor,
+            pos_edge_index:torch.Tensor,
+            neg_edge_index:torch.Tensor,
+            n_hop:int=1
+        ):
+        """
+        Input:
+            edge_index
+            pos_edge_index
+            neg_edge_index
+            n_hop
+        Output:
+            sub_edge_index
+        """
+        src,tar=edge_index
+        edge_label_index=torch.cat(
+            [pos_edge_index,neg_edge_index],
+            dim=1
+        )
+
+        seed_nodes=torch.cat([
+            edge_label_index[0],
+            edge_label_index[1]
+        ], dim=0)
+        seed_nodes=seed_nodes.unique()
+
+        sampled_edge_ids=[]
+        for _ in range(n_hop):
+            # seed node들의 이웃 노드들과 들어오는 edge들을 구함
+            mask=torch.isin(tar,seed_nodes) # [E,]
+            hop_edge_ids=mask.nonzero(as_tuple=False).view(-1) # True인 위치 
+            sampled_edge_ids.append(hop_edge_ids)
+
+            # next seed node들을 현재 seed node들의 이웃 노드들로 지정
+            seed_nodes=src[hop_edge_ids].unique()
+        
+        # compute sub_edge_index
+        sampled_edge_ids=torch.unique(torch.cat(sampled_edge_ids,dim=0)) # unique로 자동 정렬
+        sub_edge_index=edge_index[:,sampled_edge_ids]
+        return sub_edge_index

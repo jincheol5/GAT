@@ -2,7 +2,10 @@ import torch
 import networkx as nx
 
 class Graph:
-    def __init__(self,nx_graph:nx.DiGraph,node_dim:int=32):
+    def __init__(self,
+            nx_graph:nx.DiGraph,
+            node_dim:int=32
+        ):
         """
         """
         self.nx_graph=nx_graph
@@ -38,7 +41,10 @@ class Graph:
         is_mapped=set(self.nx_graph.nodes())==set(range(num_nodes))
         return is_mapped
 
-    def set_graph(self,graph:nx.DiGraph,node_dim:int=32):
+    def set_graph(self,
+            graph:nx.DiGraph,
+            node_dim:int=32
+        ):
         """
         """
         # self-loop
@@ -67,9 +73,15 @@ class Graph:
             ],
             dtype=torch.long
         ).t().contiguous() # [2,E]
+
+    def get_node_ft(self,
+            device:torch.device=torch.device("cpu")
+        ):
+        return self.node_ft.to(device) # [N,node_dim]
     
-    def get_node_ft(self):
-        return self.node_ft # [N,node_dim]
-    
-    def get_edge_index(self):
-        return self.edge_index # [2,E]
+    def get_edge_index(self,
+            device:torch.device=torch.device("cpu")
+        ):
+        return self.edge_index.to(device) # [2,E]
+
+

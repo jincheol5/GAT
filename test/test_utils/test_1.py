@@ -49,7 +49,61 @@ def test_fn(**kwargs):
             print(f"edge_index: {edge_index}",end="\n\n")
             print(f"neg_edge_index: {neg_edge_index}",end="\n\n")
 
+        case 3:
+            """
+            Test. SamplingUtils.neighbor_sampling
+            """
+            edge_index=torch.tensor(
+                [
+                    [0,0,0,1,1,2,2,3,3,4,4],  # src
+                    [0,1,2,1,3,2,3,3,4,4,5]   # dst
+                ],
+                dtype=torch.long
+            )
+            pos_edge_index=torch.tensor(
+                [
+                    [4],
+                    [5]
+                ],
+                dtype=torch.long
+            )
+            neg_edge_index=torch.tensor(
+                [
+                    [1],
+                    [5]
+                ],
+                dtype=torch.long
+            )
+            sub_edge_index=SamplingUtils.neighbor_sampling(
+                    edge_index=edge_index,
+                    pos_edge_index=pos_edge_index,
+                    neg_edge_index=neg_edge_index,
+                    n_hop=1
+                )
+            print(f"1-hop sub_edge_index: ")
+            print(sub_edge_index,end="\n\n")
+
+            sub_edge_index=SamplingUtils.neighbor_sampling(
+                    edge_index=edge_index,
+                    pos_edge_index=pos_edge_index,
+                    neg_edge_index=neg_edge_index,
+                    n_hop=2
+                )
+            print(f"2-hop sub_edge_index: ")
+            print(sub_edge_index,end="\n\n")
+            """
+            답안:
+            1-hop sub_edge_index:
+            tensor([[0, 1, 3, 4, 4],
+                    [1, 1, 4, 4, 5]])
+
+            2-hop sub_edge_index:
+            tensor([[0, 0, 1, 1, 2, 3, 3, 4, 4],
+                    [0, 1, 1, 3, 3, 3, 4, 4, 5]])
+            """
+
 if __name__=="__main__":
+
     """
     Execute test_fn
     """
