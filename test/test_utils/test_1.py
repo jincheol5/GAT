@@ -12,7 +12,7 @@ def test_fn(**kwargs):
             """
             Test. SamplingUtils.convert_edge_index_to_idx
             """
-            num_nodes=5
+            num_node=5
             edge_index=torch.tensor(
                 [
                     [0,0,1,1,2,2,3,4],
@@ -21,10 +21,10 @@ def test_fn(**kwargs):
                 dtype=torch.long
             )
             idx,population=SamplingUtils.convert_edge_index_to_idx(
-                num_nodes=num_nodes,
+                num_node=num_node,
                 edge_index=edge_index
             )
-            print(f"num_nodes: {num_nodes}",end="\n\n")
+            print(f"num_node: {num_node}",end="\n\n")
             print(f"edge_index: {edge_index}",end="\n\n")
             print(f"idx: {idx}",end="\n\n")
             print(f"population: {population}")
@@ -33,7 +33,7 @@ def test_fn(**kwargs):
             """
             Test. SamplingUtils.negative_sampling
             """
-            num_nodes=5
+            num_node=5
             edge_index=torch.tensor(
                 [
                     [0,0,1,1,2,2,3,4],
@@ -42,12 +42,15 @@ def test_fn(**kwargs):
                 dtype=torch.long
             )
             neg_edge_index=SamplingUtils.negative_sampling(
-                num_nodes=num_nodes,
-                edge_index=edge_index
+                num_node=num_node,
+                edge_index=edge_index,
+                num_neg_edge=4
             )
-            print(f"num_nodes: {num_nodes}",end="\n\n")
-            print(f"edge_index: {edge_index}",end="\n\n")
-            print(f"neg_edge_index: {neg_edge_index}",end="\n\n")
+            print(f"num_node: {num_node}",end="\n\n")
+            print(f"all edge_index: ")
+            print(edge_index,end="\n\n")
+            print(f"neg_edge_index: ")
+            print(neg_edge_index,end="\n\n")
 
         case 3:
             """

@@ -1,18 +1,56 @@
 import numpy as np
 import torch
+from typing_extensions import Literal
 
 class SamplingUtils:
     """
     edge_index에 self-loop 포함해야 함.
     """
     @staticmethod
-    def convert_edge_index_to_idx(
-            num_nodes:int,
+    def remove_self_loop_in_edge_index(
             edge_index:torch.Tensor
         ):
         """
         Input:
-            num_nodes: int
+            edge_index:
+        Return:
+            updated_edge_index:
+        """
+        src,tar=edge_index
+        mask=src!=tar
+        updated_edge_index=edge_index[:,mask]
+        return updated_edge_index
+    
+    @staticmethod
+    def add_self_loop_to_edge_index(
+            node:torch.Tensor,
+            edge_index:torch.Tensor
+        ):
+        """
+        Input:
+            node: [N,]
+            edge_index: [2,E]
+        Return:
+            updated_edge_index
+        """
+        self_loop_edge_index=torch.stack(
+            [node,node],
+            dim=0
+        )
+        updated_edge_index=torch.cat(
+            [edge_index,self_loop_edge_index],
+            dim=1
+        )
+        return updated_edge_index
+
+    @staticmethod
+    def convert_edge_index_to_idx(
+            num_node:int,
+            edge_index:torch.Tensor
+        ):
+        """
+        Input:
+            num_node: int
             edge_index: [2,E]
         Output:
             idx: [E,]
@@ -21,107 +59,99 @@ class SamplingUtils:
         src,tar=edge_index
 
         # edge(src,tar)을 edge 번호로 mapping: edge_id = src x N + tar
-        idx=src*num_nodes+tar # [E,]
+        idx=src*num_node+tar # [E,]
 
         # population는 가능한 edge 수: N x N
-        population=num_nodes*num_nodes
+        population=num_node*num_node
         return idx,population
 
     @staticmethod
     def negative_sampling(
-            num_nodes:int,
+            num_node:int,
             edge_index:torch.Tensor,
-            num_neg_edge:int=None
+            num_neg_edge:int=1
         ):
         """
-        가능한 모든 edge를 번호로 매긴 뒤, 실제 edge 번호를 제외하고 랜덤 번호를 뽑아 negative edge 생성
+        전체 edge_index에 존재하지 않는 edge 중에서
+        batch_edge_index 개수만큼 negative edge를 생성.
+
+        test neg edge 먼저 생성 후, train neg edge 생성 시 전체 edge_index에 test_neg_edge 같이 추가해서 sampling  
+        -> 학습용 neg edge를 평가에도 사용하는 경우 피하기 위해서 수행
         
-        negative edge수는 positive edge 수와 최대한 동일하도록 함
-            -positive edge 수가 가능한 edge 수의 절반 이상일 경우 비율 조정
-        
-        edge_id = src x N + tar
+        edge_id = src * N + tar
 
         Input:
-            num_nodes: int
-            edge_index: [2,E]
-            num_neg_edge: int
-        Output:
+            num_node: int
+            edge_index: [2, E], 전체 edge index
+            num_neg_edge: int, 생성할 negative edge 수, batch size만큼 생성
 
+        Output:
+            neg_edge_index: [2, num_neg_edge]
         """
         ### 1. Existing edge ids
         idx,population=SamplingUtils.convert_edge_index_to_idx(
-            num_nodes=num_nodes,
+            num_node=num_node,
             edge_index=edge_index
         )
 
         # graph가 꽉 찬 경우
         if idx.numel()>=population:
             return edge_index.new_empty((2,0))
-        
 
         ### 2. Negative edge 수 계산
-        # negative edge수는 positive edge 수와 동일
-        if num_neg_edge is None:
-            num_neg_edge=edge_index.size(1)
-
-        # Maximum available negatives
+        # 기본값: batch positive edge 수만큼 negative 생성
+        # 가능한 최대 negative 수
         max_neg_edge=population-idx.numel()
 
-        # Cannot sample more than available
-        num_neg_edge=min(
-            num_neg_edge,
-            max_neg_edge
-        )
+        # 가능한 negative 수보다 많이 뽑을 수 없음
+        num_neg_edge=min(num_neg_edge,max_neg_edge)
 
         ### 3. Negative sampling probability
-        # 범위 안에서 random 생성 시 필요한 negative 개수를 얻기 위해 미리 넉넉하게 뽑을 랜덤 번호 개수 필요
-        prob=1.-idx.numel()/population  # Probability to sample a negative.
-        sample_size=int(1.1*num_neg_edge/prob)  # Oversampling size
-
+        prob=1.-idx.numel()/population
+        sample_size=int(1.1*num_neg_edge/prob)
+        sample_size=max(sample_size,num_neg_edge) # 최소 1개 이상은 뽑도록 보정
 
         ### 4. Main sampling loop
-        # PyG에서는 3번만 반복하며 negative sampling
         idx_cpu=idx.cpu().numpy() # CPU for np.isin
         neg_idx=None
         for _ in range(3):
-            # Random edge ids
             rnd=torch.randint(
                 low=0,
                 high=population,
                 size=(sample_size,),
                 device='cpu'
             )
+            rnd_np=rnd.numpy()
 
-            # Remove true edges
-            mask=np.isin(rnd.numpy(),idx_cpu)
+            # 전체 edge_index에 존재하는 edge 제거
+            mask=np.isin(rnd_np,idx_cpu)
 
-            # Remove already sampled negatives
+            # 이미 뽑힌 negative 제거
             if neg_idx is not None:
-                mask |= np.isin(
-                    rnd.numpy(),
+                mask|=np.isin(
+                    rnd_np,
                     neg_idx.cpu().numpy()
                 )
             mask=torch.from_numpy(mask)
             rnd=rnd[~mask]
-            rnd=torch.unique(rnd) # 중복 edge 제거
 
-            # Accumulate negatives
+            # batch 내부 중복 제거
+            rnd=torch.unique(rnd)
+
+            # negative 누적
             if neg_idx is None:
                 neg_idx=rnd
             else:
-                neg_idx=torch.cat(
-                    [neg_idx,rnd],
-                    dim=0
-                )
-            
-            # Enough negatives collected
+                neg_idx=torch.cat([neg_idx,rnd],dim=0)
+
+            # 충분히 모이면 종료
             if neg_idx.numel()>=num_neg_edge:
                 neg_idx=neg_idx[:num_neg_edge]
                 break
-        
+
         ### 5. edge_id -> (src, tar)
-        neg_src=neg_idx//num_nodes
-        neg_tar=neg_idx%num_nodes
+        neg_src=neg_idx//num_node
+        neg_tar=neg_idx%num_node
         neg_edge_index=torch.stack(
             [neg_src,neg_tar],
             dim=0
@@ -137,22 +167,21 @@ class SamplingUtils:
         ):
         """
         Input:
-            edge_index
-            pos_edge_index
-            neg_edge_index
+            edge_index: [2,E], (train or val or test) edge_index
+            pos_edge_indexs: batch pos_edge_index
+            neg_edge_index: batch neg_edge_index
             n_hop
         Output:
             sub_edge_index
         """
         src,tar=edge_index
-        edge_label_index=torch.cat(
+        pos_neg_edge_index=torch.cat(
             [pos_edge_index,neg_edge_index],
             dim=1
         )
-
         seed_nodes=torch.cat([
-            edge_label_index[0],
-            edge_label_index[1]
+            pos_neg_edge_index[0],
+            pos_neg_edge_index[1]
         ], dim=0)
         seed_nodes=seed_nodes.unique()
 
@@ -170,3 +199,25 @@ class SamplingUtils:
         sampled_edge_ids=torch.unique(torch.cat(sampled_edge_ids,dim=0)) # unique로 자동 정렬
         sub_edge_index=edge_index[:,sampled_edge_ids]
         return sub_edge_index
+
+    @staticmethod
+    def get_edge_label(
+            edge_index:torch.Tensor,
+            label:Literal[0,1]=1,
+            dtype:torch.dtype=torch.float32
+        ):
+        """
+        Input:
+            edge_index: [2,E]
+            label: int
+        Return:
+            edge_label: [E,]
+        """
+        assert label in (0,1)
+        edge_label=torch.full(
+            size=(edge_index.size(1),),
+            fill_value=label,
+            dtype=dtype,
+            device=edge_index.device
+        )
+        return edge_label

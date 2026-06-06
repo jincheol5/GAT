@@ -14,21 +14,23 @@ class GAT(nn.Module):
         self.output_dim=output_dim
 
         # module
-        self.gat_layer_1=GraphAttentionEmbedding(
-            node_dim=node_dim,
-            latent_dim=latent_dim,
-            output_dim=output_dim,
-            n_head=3,
-            is_concat=True
+        self.encoder=nn.Sequential(
+            GraphAttentionEmbedding(
+                node_dim=node_dim,
+                latent_dim=latent_dim,
+                output_dim=output_dim,
+                n_head=3,
+                is_concat=True
+            ),
+            nn.ReLU(),
+            GraphAttentionEmbedding(
+                node_dim=output_dim,
+                latent_dim=latent_dim,
+                output_dim=output_dim,
+                n_head=3,
+                is_concat=False
+            )
         )
-        self.gat_layer_2=GraphAttentionEmbedding(
-            node_dim=output_dim,
-            latent_dim=latent_dim,
-            output_dim=output_dim,
-            n_head=3,
-            is_concat=False
-        )
-        self.relu=nn.ReLU()
 
     def forward(self):
         return NotImplemented
@@ -44,3 +46,23 @@ class GAT_Link_Prediction(GAT):
             latent_dim,
             output_dim
         )
+        # module
+        self.decoder=nn.Sequential(
+            nn.Linear(
+                in_features=output_dim+output_dim,
+                out_features=latent_dim
+            ),
+            nn.ReLU(),
+            nn.Linear(
+                in_features=latent_dim,
+                out_features=1
+            )
+        )
+    def forward(self,
+            node_ft:torch.Tensor,
+            edge_index:torch.Tensor
+        ):
+        """
+        """
+        h=self.encoder(node_ft=node_ft,edge_index=edge_index)
+        z=self.decoder()
