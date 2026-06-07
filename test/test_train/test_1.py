@@ -27,7 +27,9 @@ def test_fn(**kwargs):
             )
             config={
                 "epoch":1,
-                "batch_size":100
+                "batch_size":100,
+                "optimizer":"adam",
+                "lr":0.0005
             }
             ModelTrainer.train_link_prediction(
                 model=model,
@@ -35,7 +37,7 @@ def test_fn(**kwargs):
                 edge_index=edge_index,
                 exclude_edge_index=edge_index,
                 train_data_loader=data_loader,
-                args=config
+                kwargs=config
             )
             print(f"Model train finish!")
 

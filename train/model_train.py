@@ -14,33 +14,33 @@ class ModelTrainer:
             exclude_edge_index:torch.Tensor,
             train_data_loader:GraphDataLoader,
             val_data_loader:GraphDataLoader=None,
-            **args
+            **kwargs
         ):
         device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model=model.to(device)
         node_ft=node_ft.to(device=device)
         edge_index=edge_index.to(device=device)
         exclude_edge_index=exclude_edge_index.to(device=device)
-        if args["optimizer"]=="adam":
+        if kwargs["optimizer"]=="adam":
             optimizer=torch.optim.Adam(
                 model.parameters(),
-                lr=args["lr"]
+                lr=kwargs["lr"]
             )
         else:
             optimizer=torch.optim.SGD(
                 model.parameters(),
-                lr=args["lr"]
+                lr=kwargs["lr"]
             )
 
         """
         model train
         """
         num_node=node_ft.size(0)
-        for epoch in tqdm(range(args["epoch"]),desc=f"Training..."):
+        for epoch in tqdm(range(kwargs["epoch"]),desc=f"Training..."):
             model.train()
             batch_count=0
             for batch_edge_index in tqdm(
-                    train_data_loader.get_batch_list(batch_size=args["batch_size"]),
+                    train_data_loader.get_batch_list(batch_size=kwargs["batch_size"]),
                     desc=f"Training epoch: {epoch}..."
                 ):
                 batch_count+=1
