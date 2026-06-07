@@ -43,6 +43,6 @@ class ModuleUtils:
             device=score.device,
             dtype=score.dtype
         )
-        denom.index_add_(dim=0,index=index,src=score_exp)
+        denom.index_add_(dim=0,index=index,source=score_exp)
         softmax_score=score_exp/(denom[index]+1e-16)
         return softmax_score # [E,n_head]
