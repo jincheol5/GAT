@@ -28,6 +28,7 @@ class GAT_Base(nn.Module):
             n_head=3,
             is_concat=False
         )
+        self.relu=nn.ReLU()
 
     def forward(self):
         return NotImplemented
@@ -64,8 +65,8 @@ class GAT_Link_Prediction(GAT_Base):
         """
         # encoder
         h_1=self.gat_layer_1(node_ft=node_ft,edge_index=embed_edge_index)
-        h_1=nn.ReLU(h_1)
-        h=self.gat_layer_2(node_ft=node_ft,edge_index=embed_edge_index)
+        h_1=self.relu(h_1)
+        h=self.gat_layer_2(node_ft=h_1,edge_index=embed_edge_index)
 
         # decoder
         src,tar=target_edge_index

@@ -83,7 +83,7 @@ class ModelTrainer:
                     embed_edge_index=sub_edge_index,
                     target_edge_index=target_edge_index
                 ) # [target_E,1]
-                pred_target_edge_logit=pred_target_edge_logit.unsqueeze(-1) # [target_E,]
+                pred_target_edge_logit=pred_target_edge_logit.squeeze(-1) # [target_E,]
 
                 """
                 Loss

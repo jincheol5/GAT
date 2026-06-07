@@ -64,7 +64,7 @@ class GraphAttentionEmbedding(nn.Module):
             device=node_ft.device,
             dtype=node_ft.dtype
         )
-        output.index_add_(dim=0,index=tar,src=msg) # [N,n_head,latent_dim]
+        output.index_add_(dim=0,index=tar,source=msg) # [N,n_head,latent_dim]
 
         # 8. multi-head concat or mean
         if self.is_concat:
