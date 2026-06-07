@@ -13,7 +13,7 @@ class GAT_Base(nn.Module):
         self.latent_dim=latent_dim
         self.output_dim=output_dim
 
-        # module
+        # encoder module
         self.gat_layer_1=GraphAttentionEmbedding(
             node_dim=node_dim,
             latent_dim=latent_dim,
@@ -21,22 +21,12 @@ class GAT_Base(nn.Module):
             n_head=3,
             is_concat=True
         )
-        self.encoder=nn.Sequential(
-            GraphAttentionEmbedding(
-                node_dim=node_dim,
-                latent_dim=latent_dim,
-                output_dim=output_dim,
-                n_head=3,
-                is_concat=True
-            ),
-            nn.ReLU(),
-            GraphAttentionEmbedding(
-                node_dim=output_dim,
-                latent_dim=latent_dim,
-                output_dim=output_dim,
-                n_head=3,
-                is_concat=False
-            )
+        self.gat_layer_2=GraphAttentionEmbedding(
+            node_dim=output_dim,
+            latent_dim=latent_dim,
+            output_dim=output_dim,
+            n_head=3,
+            is_concat=False
         )
 
     def forward(self):
@@ -72,7 +62,12 @@ class GAT_Link_Prediction(GAT_Base):
         ):
         """
         """
-        h=self.encoder(node_ft=node_ft,edge_index=embed_edge_index)
+        # encoder
+        h_1=self.gat_layer_1(node_ft=node_ft,edge_index=embed_edge_index)
+        h_1=nn.ReLU(h_1)
+        h=self.gat_layer_2(node_ft=node_ft,edge_index=embed_edge_index)
+
+        # decoder
         src,tar=target_edge_index
         src_ft=h[src]
         tar_ft=h[tar]
