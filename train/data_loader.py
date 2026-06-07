@@ -17,4 +17,4 @@ class GraphDataLoader:
             end=min(start+batch_size,num_edges)
             batch_edge_index=self.edge_index[:,start:end]
             batch_list.append(batch_edge_index)
-        return batch_edge_index
+        return batch_list

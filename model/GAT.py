@@ -14,6 +14,13 @@ class GAT_Base(nn.Module):
         self.output_dim=output_dim
 
         # module
+        self.gat_layer_1=GraphAttentionEmbedding(
+            node_dim=node_dim,
+            latent_dim=latent_dim,
+            output_dim=output_dim,
+            n_head=3,
+            is_concat=True
+        )
         self.encoder=nn.Sequential(
             GraphAttentionEmbedding(
                 node_dim=node_dim,

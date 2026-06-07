@@ -37,7 +37,7 @@ def test_fn(**kwargs):
                 edge_index=edge_index,
                 exclude_edge_index=edge_index,
                 train_data_loader=data_loader,
-                kwargs=config
+                **config
             )
             print(f"Model train finish!")
 
