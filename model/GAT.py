@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from modules import GraphAttentionEmbedding
 
-class GAT(nn.Module):
+class GAT_Base(nn.Module):
     def __init__(self,
             node_dim:int,
             latent_dim:int,
@@ -35,7 +35,7 @@ class GAT(nn.Module):
     def forward(self):
         return NotImplemented
 
-class GAT_Link_Prediction(GAT):
+class GAT_Link_Prediction(GAT_Base):
     def __init__(self,
             node_dim:int,
             latent_dim:int,
@@ -60,9 +60,18 @@ class GAT_Link_Prediction(GAT):
         )
     def forward(self,
             node_ft:torch.Tensor,
-            edge_index:torch.Tensor
+            embed_edge_index:torch.Tensor,
+            target_edge_index:torch.Tensor
         ):
         """
         """
-        h=self.encoder(node_ft=node_ft,edge_index=edge_index)
-        z=self.decoder()
+        h=self.encoder(node_ft=node_ft,edge_index=embed_edge_index)
+        src,tar=target_edge_index
+        src_ft=h[src]
+        tar_ft=h[tar]
+        edge_ft=torch.cat(
+            [src_ft,tar_ft],
+            dim=-1
+        )
+        pred_target_edge_logit=self.decoder(edge_ft) # [target_E,1]
+        return pred_target_edge_logit

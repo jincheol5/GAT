@@ -9,13 +9,10 @@ class Graph:
         """
         """
         self.nx_graph=nx_graph
-        # self-loop
+        # remove self-loop
         nx_graph.remove_edges_from(
             nx.selfloop_edges(nx_graph)
         )
-        for node in nx_graph.nodes():
-            if not nx_graph.has_edge(node,node):
-                nx_graph.add_edge(node,node)
 
         node_mapping={
             node_id:idx
@@ -47,13 +44,10 @@ class Graph:
         ):
         """
         """
-        # self-loop
+        # remove self-loop
         graph.remove_edges_from(
             nx.selfloop_edges(graph)
         )
-        for node in graph.nodes():
-            if not graph.has_edge(node,node):
-                graph.add_edge(node,node)
 
         node_mapping={
             node_id:idx
@@ -74,14 +68,10 @@ class Graph:
             dtype=torch.long
         ).t().contiguous() # [2,E]
 
-    def get_node_ft(self,
-            device:torch.device=torch.device("cpu")
-        ):
-        return self.node_ft.to(device) # [N,node_dim]
+    def get_node_ft(self,):
+        return self.node_ft # [N,node_dim]
     
-    def get_edge_index(self,
-            device:torch.device=torch.device("cpu")
-        ):
-        return self.edge_index.to(device) # [2,E]
+    def get_edge_index(self,):
+        return self.edge_index # [2,E]
 
 

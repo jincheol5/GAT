@@ -75,6 +75,8 @@ class SamplingUtils:
         전체 edge_index에 존재하지 않는 edge 중에서
         batch_edge_index 개수만큼 negative edge를 생성.
 
+        self-loop는 negative edge로 생성되지 않도록 코드 작성.
+
         test neg edge 먼저 생성 후, train neg edge 생성 시 전체 edge_index에 test_neg_edge 같이 추가해서 sampling  
         -> 학습용 neg edge를 평가에도 사용하는 경우 피하기 위해서 수행
         
@@ -101,7 +103,7 @@ class SamplingUtils:
         ### 2. Negative edge 수 계산
         # 기본값: batch positive edge 수만큼 negative 생성
         # 가능한 최대 negative 수
-        max_neg_edge=population-idx.numel()
+        max_neg_edge=population-idx.numel()-num_node # 전체 가능 edge 수 - 현재 존재하는 edge 수 - self-loop수
 
         # 가능한 negative 수보다 많이 뽑을 수 없음
         num_neg_edge=min(num_neg_edge,max_neg_edge)
@@ -125,6 +127,11 @@ class SamplingUtils:
 
             # 전체 edge_index에 존재하는 edge 제거
             mask=np.isin(rnd_np,idx_cpu)
+
+            # self-loop 제거
+            src_np=rnd_np//num_node
+            tar_np=rnd_np%num_node
+            mask|=(src_np==tar_np)
 
             # 이미 뽑힌 negative 제거
             if neg_idx is not None:
@@ -160,6 +167,7 @@ class SamplingUtils:
 
     @staticmethod
     def neighbor_sampling(
+            num_node:int,
             edge_index:torch.Tensor,
             pos_edge_index:torch.Tensor,
             neg_edge_index:torch.Tensor,
@@ -167,6 +175,7 @@ class SamplingUtils:
         ):
         """
         Input:
+            num_node: dataset 전체 노드 수
             edge_index: [2,E], (train or val or test) edge_index
             pos_edge_indexs: batch pos_edge_index
             neg_edge_index: batch neg_edge_index
@@ -198,6 +207,13 @@ class SamplingUtils:
         # compute sub_edge_index
         sampled_edge_ids=torch.unique(torch.cat(sampled_edge_ids,dim=0)) # unique로 자동 정렬
         sub_edge_index=edge_index[:,sampled_edge_ids]
+
+        # add self-loop for embedding
+        node=torch.arange(num_node,dtype=torch.long,device=edge_index.device)
+        sub_edge_index=SamplingUtils.add_self_loop_to_edge_index(
+            node=node,
+            edge_index=sub_edge_index
+        )
         return sub_edge_index
 
     @staticmethod

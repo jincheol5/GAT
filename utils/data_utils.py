@@ -12,7 +12,7 @@ class DataUtils:
         Output:
             graph: nx.DiGraph
         """
-        dataset_path=os.path.join("dataset",dataset_name,f"{dataset_name}.txt")
+        dataset_path=os.path.join("dataset",dataset_name,f"{dataset_name}.txt") # 임시
         graph=nx.read_edgelist(
             dataset_path,
             nodetype=int,
