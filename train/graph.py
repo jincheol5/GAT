@@ -20,7 +20,7 @@ class Graph:
         }
         nx_graph=nx.relabel_nodes(nx_graph,node_mapping)
 
-        self.node_ft=torch.ones(
+        self.node_ft=torch.zeros(
             len(node_mapping),
             node_dim
         ) # [N,node_dim]
